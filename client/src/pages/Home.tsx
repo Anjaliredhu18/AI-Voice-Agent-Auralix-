@@ -125,9 +125,9 @@ export default function Home() {
         <div className="flex justify-between items-center mb-12 px-2">
           <div className="flex flex-col">
             <h1 className="text-4xl font-display font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
-              Vapi Voice
+              Auralix
             </h1>
-            <p className="text-muted-foreground text-sm tracking-wide">AI CONVERSATION INTERFACE</p>
+            <p className="text-muted-foreground text-sm tracking-wide">Created by: Anjali Redhu</p>
           </div>
           <SettingsDialog 
             onSave={handleSaveSettings} 
@@ -191,7 +191,7 @@ export default function Home() {
         {/* Instructions / Footer */}
         <div className="mt-12 text-center space-y-2">
           <p className="text-sm text-muted-foreground">
-            Powered by Vapi & Replit
+            &nbsp;
           </p>
         </div>
       </div>
