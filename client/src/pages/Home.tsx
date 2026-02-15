@@ -12,7 +12,7 @@ import profileImage from "@assets/AI_Tutor_1771134482149.png";
 type VapiState = "idle" | "connecting" | "listening" | "speaking" | "error";
 
 const PUBLIC_KEY = import.meta.env.VITE_VAPI_PUBLIC_KEY;
-const ASSISTANT_ID = import.meta.env.VITE_VAPI_ASSISTANT_ID;
+const ASSISTANT_ID = "965bd1fa-1b1e-42c9-bf90-3ec7d28ab5ee";
 
 export default function Home() {
   const [vapi, setVapi] = useState<Vapi | null>(null);

@@ -37,3 +37,8 @@ author = "agent"
 task = "shell.exec"
 args = "npm run dev"
 waitForPort = 5000
+
+[userenv]
+
+[userenv.shared]
+VITE_VAPI_PUBLIC_KEY = "27e2a8a0-47f9-4e58-87fd-a214ae0fc290"
