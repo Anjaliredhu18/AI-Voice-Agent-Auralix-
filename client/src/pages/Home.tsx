@@ -1,46 +1,39 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import Vapi from "@vapi-ai/web";
 import { Mic, Square, AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AudioVisualizer } from "@/components/AudioVisualizer";
-import { SettingsDialog } from "@/components/SettingsDialog";
 import { useCreateCall } from "@/hooks/use-calls";
 import { useToast } from "@/hooks/use-toast";
+import profileImage from "@assets/AI_Tutor_1771134482149.png";
 
 type VapiState = "idle" | "connecting" | "listening" | "speaking" | "error";
+
+const PUBLIC_KEY = import.meta.env.VITE_VAPI_PUBLIC_KEY;
+const ASSISTANT_ID = import.meta.env.VITE_VAPI_ASSISTANT_ID;
 
 export default function Home() {
   const [vapi, setVapi] = useState<Vapi | null>(null);
   const [status, setStatus] = useState<VapiState>("idle");
-  const [publicKey, setPublicKey] = useState("");
-  const [assistantId, setAssistantId] = useState("");
   const [volume, setVolume] = useState(0);
   const [error, setError] = useState<string | null>(null);
   
   const createCall = useCreateCall();
   const { toast } = useToast();
   
-  // Initialize from local storage
-  useEffect(() => {
-    const storedKey = localStorage.getItem("vapi_public_key");
-    const storedAssistant = localStorage.getItem("vapi_assistant_id");
-    if (storedKey) setPublicKey(storedKey);
-    if (storedAssistant) setAssistantId(storedAssistant);
-  }, []);
-
   // Configure Vapi instance
   useEffect(() => {
-    if (!publicKey) return;
+    if (!PUBLIC_KEY) return;
 
     try {
-      const vapiInstance = new Vapi(publicKey);
+      const vapiInstance = new Vapi(PUBLIC_KEY);
       
       vapiInstance.on("call-start", () => {
         setStatus("listening");
         createCall.mutate({ status: "started" });
-        toast({ title: "Connected", description: "Voice assistant is ready." });
+        toast({ title: "Connected", description: "Auralix is ready to talk." });
       });
 
       vapiInstance.on("call-end", () => {
@@ -49,16 +42,10 @@ export default function Home() {
       });
 
       vapiInstance.on("speech-start", () => setStatus("listening"));
-      vapiInstance.on("speech-end", () => setStatus("listening")); // Back to listening after user speaks
+      vapiInstance.on("speech-end", () => setStatus("listening"));
       
-      // Note: Vapi SDK events might vary, assuming simple state mapping here
-      // Real implementation might listen to 'volume-level' for visualizer
       vapiInstance.on("volume-level", (level) => {
         setVolume(level);
-        if (level > 0.1 && status !== "speaking") {
-          // simple heuristic for "assistant speaking" if needed, 
-          // or rely on other events if Vapi provides them
-        }
       });
 
       vapiInstance.on("error", (e) => {
@@ -71,21 +58,17 @@ export default function Home() {
       setVapi(vapiInstance);
     } catch (err) {
       console.error("Failed to init Vapi", err);
-      setError("Failed to initialize Vapi SDK");
+      setError("Failed to initialize Auralix");
     }
 
     return () => {
       vapi?.stop();
     };
-  }, [publicKey]);
+  }, [PUBLIC_KEY]);
 
   const handleStart = async () => {
-    if (!publicKey || !assistantId) {
-      toast({
-        variant: "destructive",
-        title: "Configuration Missing",
-        description: "Please set your API Key and Assistant ID in settings."
-      });
+    if (!PUBLIC_KEY || !ASSISTANT_ID) {
+      setError("System configuration missing (API Key or Assistant ID)");
       return;
     }
 
@@ -93,10 +76,10 @@ export default function Home() {
     setStatus("connecting");
     
     try {
-      await vapi?.start(assistantId);
+      await vapi?.start(ASSISTANT_ID);
     } catch (err) {
       setStatus("error");
-      setError("Failed to connect to assistant");
+      setError("Failed to connect to Auralix");
     }
   };
 
@@ -105,38 +88,26 @@ export default function Home() {
     setStatus("idle");
   };
 
-  const handleSaveSettings = (pk: string, aid: string) => {
-    setPublicKey(pk);
-    setAssistantId(aid);
-    localStorage.setItem("vapi_public_key", pk);
-    localStorage.setItem("vapi_assistant_id", aid);
-    toast({ title: "Settings Saved", description: "Configuration updated successfully." });
-  };
-
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden bg-slate-950">
       {/* Decorative Background Elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 rounded-full blur-[128px] animate-float" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-secondary/10 rounded-full blur-[128px] animate-float" style={{ animationDelay: "-2s" }} />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-500/10 rounded-full blur-[128px] animate-float" style={{ animationDelay: "-2s" }} />
       </div>
 
       <div className="max-w-md w-full relative z-10">
-        <div className="flex justify-between items-center mb-12 px-2">
-          <div className="flex flex-col">
-            <h1 className="text-4xl font-display font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
-              Auralix
-            </h1>
-            <p className="text-muted-foreground text-sm tracking-wide">Created by: Anjali Redhu</p>
+        <div className="flex flex-col items-center mb-8 text-center">
+          <div className="w-32 h-32 rounded-full overflow-hidden mb-6 border-4 border-white/10 shadow-2xl">
+            <img src={profileImage} alt="Auralix" className="w-full h-full object-cover" />
           </div>
-          <SettingsDialog 
-            onSave={handleSaveSettings} 
-            defaultPublicKey={publicKey} 
-            defaultAssistantId={assistantId} 
-          />
+          <h1 className="text-4xl font-display font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60 mb-2">
+            Auralix – AI Voice Assistant
+          </h1>
+          <p className="text-muted-foreground text-sm tracking-wide font-medium">Built by Anjali Redhu</p>
         </div>
 
-        <Card className="glass-panel border-none p-8 flex flex-col items-center justify-center min-h-[400px]">
+        <Card className="glass-panel border-white/10 bg-white/5 backdrop-blur-xl p-8 flex flex-col items-center justify-center min-h-[350px] shadow-2xl">
           {error && (
             <Alert variant="destructive" className="mb-6 bg-red-500/10 border-red-500/20 text-red-200">
               <AlertCircle className="h-4 w-4" />
@@ -151,23 +122,23 @@ export default function Home() {
             volume={volume}
           />
 
-          <div className="mt-8 flex flex-col gap-4 w-full max-w-[200px]">
+          <div className="mt-10 flex flex-col gap-4 w-full max-w-[220px]">
             {status === "idle" || status === "error" ? (
               <Button 
                 size="lg" 
                 onClick={handleStart}
-                className="w-full h-14 rounded-full text-lg font-medium bg-gradient-to-r from-primary to-accent hover:shadow-lg hover:shadow-primary/25 hover:-translate-y-0.5 transition-all duration-300"
+                className="w-full h-16 rounded-full text-xl font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-50 to-indigo-500 shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 hover:-translate-y-1 transition-all duration-300"
               >
-                <Mic className="mr-2 w-5 h-5" />
+                <Mic className="mr-3 w-6 h-6" />
                 Start Talking
               </Button>
             ) : status === "connecting" ? (
               <Button 
                 size="lg" 
                 disabled 
-                className="w-full h-14 rounded-full bg-muted/50 text-muted-foreground cursor-wait"
+                className="w-full h-16 rounded-full bg-white/10 text-white/50 cursor-wait border border-white/5"
               >
-                <Loader2 className="mr-2 w-5 h-5 animate-spin" />
+                <Loader2 className="mr-3 w-6 h-6 animate-spin" />
                 Connecting...
               </Button>
             ) : (
@@ -175,25 +146,18 @@ export default function Home() {
                 size="lg" 
                 variant="destructive"
                 onClick={handleStop}
-                className="w-full h-14 rounded-full text-lg font-medium hover:shadow-lg hover:shadow-destructive/25 hover:-translate-y-0.5 transition-all duration-300"
+                className="w-full h-16 rounded-full text-xl font-semibold shadow-lg shadow-destructive/20 hover:shadow-destructive/40 hover:-translate-y-1 transition-all duration-300"
               >
-                <Square className="mr-2 w-5 h-5 fill-current" />
+                <Square className="mr-3 w-6 h-6 fill-current" />
                 Stop Session
               </Button>
             )}
           </div>
           
-          <div className="mt-8 text-xs text-muted-foreground/60 text-center font-mono">
-            {publicKey && assistantId ? "SYSTEM READY" : "CONFIGURATION REQUIRED"}
+          <div className="mt-8 text-[10px] text-white/20 text-center font-mono tracking-widest uppercase">
+            {PUBLIC_KEY && ASSISTANT_ID ? "Auralix Online" : "Configuration Required"}
           </div>
         </Card>
-
-        {/* Instructions / Footer */}
-        <div className="mt-12 text-center space-y-2">
-          <p className="text-sm text-muted-foreground">
-            &nbsp;
-          </p>
-        </div>
       </div>
     </div>
   );
