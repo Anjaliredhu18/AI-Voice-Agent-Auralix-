@@ -4,12 +4,40 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
     <link rel="icon" href="/auralix-icon.png" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <title>Auralix | AI Voice Assistant</title>
   </head>
+
   <body>
+
+    <script>
+      const correctPassword = "AuralixDemo2025";
+      const entered = prompt("Enter demo password to access Auralix:");
+
+      if (entered !== correctPassword) {
+        document.body.innerHTML = `
+          <div style="
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            height:100vh;
+            font-family:sans-serif;
+            background:#0f172a;
+            color:white;
+            text-align:center;
+          ">
+            <div>
+              <h2>Access Denied</h2>
+              <p>This demo is password protected.</p>
+            </div>
+          </div>
+        `;
+      }
+    </script>
+
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+
   </body>
 </html>
